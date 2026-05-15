@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protected Access</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        input[type="password"] {
+            width: 90%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            width: 95%;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+        #protected-content {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="password-gate" class="card">
+        <h2>Enter Password</h2>
+        <input type="password" id="password-input" placeholder="Enter password here...">
+        <button onclick="submitPassword()">Submit</button>
+        <div id="error-msg" class="error-message">Access Denied. Incorrect password.</div>
+    </div>
+
+    <div id="protected-content" class="card">
+        <h2>Access Granted!</h2>
+        <p>Welcome to the protected section of the website.</p>
+    </div>
+
+    <script>
+        async function submitPassword() {
+            const passwordField = document.getElementById("password-input");
+            const password = passwordField.value;
+            const errorMsg = document.getElementById("error-msg");
+            const gate = document.getElementById("password-gate");
+            const content = document.getElementById("protected-content");
+
+            errorMsg.style.display = "none";
+
+            try {
+                // Send password to the backend API route
+                const response = await fetch('/api/check-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Success: Hide gate, show content
+                    gate.style.display = "none";
+                    content.style.display = "block";
+                } else {
+                    // Fail: Show error, clear input
+                    errorMsg.style.display = "block";
+                    passwordField.value = "";
+                }
+            } catch (error) {
+                errorMsg.innerText = "An error occurred. Please try again.";
+                errorMsg.style.display = "block";
+            }
+        }
+
+        document.getElementById("password-input").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                submitPassword();
+            }
+        });
+    </script>
+</body>
+</html>
